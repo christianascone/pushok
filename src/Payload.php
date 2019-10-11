@@ -277,10 +277,6 @@ class Payload implements \JsonSerializable
      */
     public function setCustomValue(string $key, $value): Payload
     {
-        if ($key === self::PAYLOAD_ROOT_KEY) {
-            throw InvalidPayloadException::reservedKey();
-        }
-
         $this->customValues[$key] = $value;
 
         return $this;
@@ -322,6 +318,10 @@ class Payload implements \JsonSerializable
     {
         $payload = self::getDefaultPayloadStructure();
 
+        if ((is_array($this->customValues) || $this->customValues instanceof Countable) && count($this->customValues)) {
+            $payload = array_merge($payload, $this->customValues);
+        }
+
         if ($this->alert instanceof Alert || is_string($this->alert)) {
             $payload[self::PAYLOAD_ROOT_KEY][self::PAYLOAD_ALERT_KEY] = $this->alert;
         }
@@ -348,10 +348,6 @@ class Payload implements \JsonSerializable
 
         if (is_string($this->threadId)) {
             $payload[self::PAYLOAD_ROOT_KEY][self::PAYLOAD_THREAD_ID_KEY] = $this->threadId;
-        }
-
-        if ((is_array($this->customValues) || $this->customValues instanceof Countable) && count($this->customValues)) {
-            $payload = array_merge($payload, $this->customValues);
         }
 
         return $payload;
